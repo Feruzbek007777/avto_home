@@ -6,6 +6,7 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+
 class Cars(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
@@ -17,3 +18,14 @@ class Cars(models.Model):
     def __str__(self):
         return self.name
 
+
+# Ustoz haydovchi haqida qoshdim !!!
+
+class Driver(models.Model):
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    age = models.IntegerField(default=18)
+    experience_years = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.first_name
