@@ -31,6 +31,37 @@ class CarApiView(APIView):
             return Response(CarSerializer(car).data, status=status.HTTP_201_CREATED)
 
 
+    def put(self,request, pk:int = None):
+        if not pk :
+            return Response({"message": f"Method {request.method} POST not allowed"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        else:
+            try:
+                cars = Cars.objects.get(pk=pk)
+            except Exception as e:
+                return Response({"message": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            serializer = CarSerializer(instance=cars, data=request.data, partial=True if request.method == 'PATCH' else False)
+            serializer.is_valid(raise_exception=True)
+            product = serializer.save()
+            return Response(CarSerializer(cars).data)
+
+    def patch(self, request, pk : int = None):
+        return self.put(request, pk)
+
+
+    def delete(self, request:Request, pk:int = None):
+        if not pk :
+            return Response({"message": "Method Delete not allowed "}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        else:
+            try:
+                product = Cars.objects.get(pk=pk)
+            except Exception as e:
+                return Response({"message": "Product topilmadi"}, status=status.HTTP_404_NOT_FOUND)
+
+            product.delete()
+            return Response({"message": "Product deleted !!!"}, status=status.HTTP_204_NO_CONTENT)
+
+
 class DriverApiView(APIView):
     def get(self, request: Request, pk: int = None):
         if not pk:
@@ -53,3 +84,34 @@ class DriverApiView(APIView):
             serializer.is_valid(raise_exception=True)
             driver = serializer.save()
             return Response(DriverSerializer(driver).data, status=status.HTTP_201_CREATED)
+
+    def put(self,request, pk:int = None):
+        if not pk :
+            return Response({"message": f"Method {request.method} POST not allowed"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        else:
+            try:
+                drivers = Driver.objects.get(pk=pk)
+            except Exception as e:
+                return Response({"message": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            serializer = DriverSerializer(instance=drivers, data=request.data, partial=True if request.method == 'PATCH' else False)
+            serializer.is_valid(raise_exception=True)
+            drivers = serializer.save()
+            return Response(DriverSerializer(drivers).data)
+
+    def patch(self, request, pk : int = None):
+        return self.put(request, pk)
+
+
+    def delete(self, request:Request, pk:int = None):
+        if not pk :
+            return Response({"message": "Method Delete not allowed "}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        else:
+            try:
+                drivers = Driver.objects.get(pk=pk)
+            except Exception as e:
+                return Response({"message": "Driver topilmadi"}, status=status.HTTP_404_NOT_FOUND)
+
+            drivers.delete()
+            return Response({"message": "Product deleted !!!"}, status=status.HTTP_204_NO_CONTENT)
+
