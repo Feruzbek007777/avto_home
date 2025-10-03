@@ -1,117 +1,50 @@
+from rest_framework import generics
+from rest_framework import permissions
 from rest_framework.views import APIView
-from rest_framework.request import Request
-from rest_framework.response import Response
-from rest_framework import status
 
-from .models import Cars, Driver
-from .serializers import CarSerializer, DriverSerializer
+from .models import Cars, Driver, Color
+from .serializers import CarSerializer, DriverSerializer, ColorSerializer
 
 
-class CarApiView(APIView):
-    def get(self, request: Request, pk: int = None):
-        if not pk:
-            cars = Cars.objects.all()
-            serializer = CarSerializer(cars, many=True)
-            return Response(serializer.data)
+
+class IsAdultUser(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user and request.user.is_authenticated
+# User login qigan bosa va prfilida age mavjud bo‘lsa tekshirish mumkin(Hali mukammalroq qilsak buyam
+# ish beradi yani yoshini oladigan qilsak !
+# Hozircha oddiy qilib faqat autentifikatsiya qilingan userga ruxsat berdim, shuyam bolaversa kere ustoz
+
+
+class CarApiView(generics.ListCreateAPIView):
+    queryset = Cars.objects.all()
+    serializer_class = CarSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        car = self.queryset.all()
+        return car
+
+    def get_serializer_class(self):
+        if self.request.user.is_staff:
+            main = CarSerializer
         else:
-            try:
-                car = Cars.objects.get(pk=pk)
-                serializer = CarSerializer(car)
-                return Response(serializer.data)
-            except Exception as e :
-                return Response({"message": "Bunday avtomobil mavjud emas"}, status=status.HTTP_404_NOT_FOUND)
-
-    def post(self, request: Request, pk: int = None):
-        if pk:
-            return Response({"message": "Method POST not allowed"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        else:
-            serializer = CarSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            car = serializer.save()
-            return Response(CarSerializer(car).data, status=status.HTTP_201_CREATED)
+            main = self.serializer_class
+        return main
 
 
-    def put(self,request, pk:int = None):
-        if not pk :
-            return Response({"message": f"Method {request.method} POST not allowed"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        else:
-            try:
-                cars = Cars.objects.get(pk=pk)
-            except Exception as e:
-                return Response({"message": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
-
-            serializer = CarSerializer(instance=cars, data=request.data, partial=True if request.method == 'PATCH' else False)
-            serializer.is_valid(raise_exception=True)
-            product = serializer.save()
-            return Response(CarSerializer(cars).data)
-
-    def patch(self, request, pk : int = None):
-        return self.put(request, pk)
+class CarDetailApiView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Cars.objects.all()
+    serializer_class = CarSerializer
+    permission_classes = [IsAdultUser]
 
 
-    def delete(self, request:Request, pk:int = None):
-        if not pk :
-            return Response({"message": "Method Delete not allowed "}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        else:
-            try:
-                product = Cars.objects.get(pk=pk)
-            except Exception as e:
-                return Response({"message": "Product topilmadi"}, status=status.HTTP_404_NOT_FOUND)
-
-            product.delete()
-            return Response({"message": "Product deleted !!!"}, status=status.HTTP_204_NO_CONTENT)
+class DriverApiView(generics.ListCreateAPIView):
+    queryset = Driver.objects.all()
+    serializer_class = DriverSerializer
+    permission_classes = [permissions.AllowAny]
 
 
-class DriverApiView(APIView):
-    def get(self, request: Request, pk: int = None):
-        if not pk:
-            drivers = Driver.objects.all()
-            serializer = DriverSerializer(drivers, many=True)
-            return Response(serializer.data)
-        else:
-            try:
-                driver = Driver.objects.get(pk=pk)
-                serializer = DriverSerializer(driver)
-                return Response(serializer.data)
-            except Exception as e:
-                return Response({"message": "Bunday haydovchi mavjud emas"}, status=status.HTTP_404_NOT_FOUND)
-
-    def post(self, request: Request, pk: int = None):
-        if pk:
-            return Response({"message": "Method POST not allowed"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        else:
-            serializer = DriverSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            driver = serializer.save()
-            return Response(DriverSerializer(driver).data, status=status.HTTP_201_CREATED)
-
-    def put(self,request, pk:int = None):
-        if not pk :
-            return Response({"message": f"Method {request.method} POST not allowed"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        else:
-            try:
-                drivers = Driver.objects.get(pk=pk)
-            except Exception as e:
-                return Response({"message": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
-
-            serializer = DriverSerializer(instance=drivers, data=request.data, partial=True if request.method == 'PATCH' else False)
-            serializer.is_valid(raise_exception=True)
-            drivers = serializer.save()
-            return Response(DriverSerializer(drivers).data)
-
-    def patch(self, request, pk : int = None):
-        return self.put(request, pk)
-
-
-    def delete(self, request:Request, pk:int = None):
-        if not pk :
-            return Response({"message": "Method Delete not allowed "}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        else:
-            try:
-                drivers = Driver.objects.get(pk=pk)
-            except Exception as e:
-                return Response({"message": "Driver topilmadi"}, status=status.HTTP_404_NOT_FOUND)
-
-            drivers.delete()
-            return Response({"message": "Product deleted !!!"}, status=status.HTTP_204_NO_CONTENT)
-
+class ColorApiView(generics.ListCreateAPIView):
+    queryset = Color.objects.all()
+    serializer_class = ColorSerializer
+    permission_classes = [permissions.AllowAny]
