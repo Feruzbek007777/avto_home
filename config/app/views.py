@@ -14,10 +14,6 @@ from .permissions import Permission
 class IsAdultUser(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user and request.user.is_authenticated
-# User login qigan bosa va prfilida age mavjud bo‘lsa tekshirish mumkin(Hali mukammalroq qilsak buyam
-# ish beradi yani yoshini oladigan qilsak !
-# Hozircha oddiy qilib faqat autentifikatsiya qilingan userga ruxsat berdim, shuyam bolaversa kere ustoz
-
 
 class CarApiView(generics.ListCreateAPIView):
     queryset = Cars.objects.all()
